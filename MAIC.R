@@ -12,7 +12,7 @@ library(RCurl)
 
 # Read in main IPD MAIC dataset (one row per patient)
 x <- getURL("https://raw.githubusercontent.com/tim-estima/maic_tutorial/master/maic_data.csv")
-df_main <- read.csv(text = x)
+df_main <- read.csv(text = x) %>% mutate(biomarker_binary=ifelse(biomarker>600,1,0))
 
 # Read in aggregate dataset being compared to (from ANCHOR study)
 y<- getURL('https://raw.githubusercontent.com/tim-estima/maic_tutorial/master/anchor_aggregate_data.csv')
@@ -41,7 +41,7 @@ df_anchor_aggregate %>%
     metastatic=sprintf("%1.0f%%", 100*metastatic)
   )
 
-df_main$TRT <- relevel(df_main$TRT,'Placebo')
+df_main$TRT <- relevel(df_main$TRT,'Estimab')
 
 # Check effect modifiers in MAIN trial
 cox_all_covariates_main <-
