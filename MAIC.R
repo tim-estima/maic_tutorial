@@ -8,8 +8,7 @@ library(tidyr)
 library(survminer)
 library(RCurl)
 
-# Set baseline directory
-
+# Reading in data- get directly from the github URLs below if this doesn't work
 # Read in main IPD MAIC dataset (one row per patient)
 x <- getURL("https://raw.githubusercontent.com/tim-estima/maic_tutorial/master/maic_data.csv")
 df_main <- read.csv(text = x) %>% mutate(biomarker_binary=ifelse(biomarker>600,1,0))
@@ -41,7 +40,7 @@ df_anchor_aggregate %>%
     metastatic=sprintf("%1.0f%%", 100*metastatic)
   )
 
-df_main$TRT <- relevel(df_main$TRT,'Estimab')
+df_main$TRT <- relevel(df_main$TRT, 'Estimab')
 
 # Check effect modifiers in MAIN trial
 cox_all_covariates_main <-
@@ -86,7 +85,7 @@ df_main_centered <- df_main %>%
 
 objfn <- function(a1, X){
   sum(exp(X %*% a1))
-} # This is a fuction for Q(b) defined above.
+} # This is a function for Q(b) defined above.
 # Gradient function => Derivative of Q(b).
 gradfn <- function(a1, X){
   colSums(sweep(X, 1, exp(X %*% a1), "*"))
@@ -126,8 +125,6 @@ reweighted_anchor_baseline <- as.data.frame(
 
 ESS = sum(df_analysis$wt)^2/sum(df_analysis$wt^2)
 
-###############Need to add histogram of rescaled weights here
-
 # Data used for indirect comparison from anchor trial
 anchor_pfs_log_hr <- log(0.97)
 anchor_pfs_log_hr_lci <- log(0.86)
@@ -149,6 +146,7 @@ cox_adjusted <- coxph(
   weights=wt
 )
 
+# Rescaled weights and histogram
 wt.rs <- (wt / sum(wt))*nrow(df_analysis)
 
 qplot(wt.rs, geom='histogram', xlab='Rescaled weight', binwidth=0.25)
